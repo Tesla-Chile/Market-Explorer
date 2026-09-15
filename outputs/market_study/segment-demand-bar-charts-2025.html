@@ -1,0 +1,332 @@
+<div id="segment-demand-share-charts-2025" class="segment-demand-share-charts">
+  <h2>Market share por modelo, Ene-Dic de 2025</h2>
+  <div class="chart-block">
+    <div class="viz-row">
+      <h3>SUV | Rango precio lista $30MM-$50MM CLP</h3>
+      <button class="btn btn-ghost" type="button" data-download="suv">Descargar PNG SUV</button>
+    </div>
+    <div class="chart-slot" data-chart="suv"></div>
+  </div>
+  <div class="chart-block">
+    <div class="viz-row">
+      <h3>Vehículos de Pasajeros | Rango precio lista $25MM-$50MM CLP</h3>
+      <button class="btn btn-ghost" type="button" data-download="passenger">Descargar PNG pasajeros</button>
+    </div>
+    <div class="chart-slot" data-chart="passenger"></div>
+  </div>
+</div>
+
+<style>
+  #segment-demand-share-charts-2025 {
+    width: 100%;
+    color: var(--foreground);
+  }
+
+  #segment-demand-share-charts-2025 h2,
+  #segment-demand-share-charts-2025 h3 {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  #segment-demand-share-charts-2025 h2 {
+    margin-bottom: 18px;
+  }
+
+  #segment-demand-share-charts-2025 .chart-block + .chart-block {
+    margin-top: 30px;
+  }
+
+  #segment-demand-share-charts-2025 .chart-slot {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  #segment-demand-share-charts-2025 .viz-row {
+    justify-content: space-between;
+  }
+
+  #segment-demand-share-charts-2025 svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  #segment-demand-share-charts-2025 text {
+    fill: var(--foreground);
+    font-size: 12px;
+  }
+
+  #segment-demand-share-charts-2025 .axis text,
+  #segment-demand-share-charts-2025 .axis-title,
+  #segment-demand-share-charts-2025 .price-note {
+    fill: var(--muted-foreground);
+  }
+
+  #segment-demand-share-charts-2025 .chart-title {
+    fill: var(--foreground);
+    font-weight: 500;
+  }
+
+  #segment-demand-share-charts-2025 .grid-line {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+
+  #segment-demand-share-charts-2025 .bar {
+    fill: var(--viz-series-1);
+  }
+
+  #segment-demand-share-charts-2025 .bar.other {
+    fill: var(--viz-series-2);
+  }
+
+  #segment-demand-share-charts-2025 .chart-frame {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+</style>
+
+<script>
+  (() => {
+    const root = document.getElementById("segment-demand-share-charts-2025");
+    const data = {
+      suv: [
+        { label: "TOYOTA RAV4", starting: 25990000, units: 1701, share: 0.0808 },
+        { label: "SUBARU ALL NEW FORESTER", starting: 25990000, units: 1578, share: 0.0750 },
+        { label: "SUBARU ALL NEW OUTBACK", starting: 29990000, units: 1010, share: 0.0480 },
+        { label: "KIA SPORTAGE", starting: 21990000, units: 835, share: 0.0397 },
+        { label: "VOLVO EX30", starting: 29900000, units: 705, share: 0.0335 },
+        { label: "HYUNDAI TUCSON NX4E HEV", starting: 28990000, units: 594, share: 0.0282 },
+        { label: "TESLA MODEL Y", starting: 36900000, units: 539, share: 0.0256 },
+        { label: "OTROS", starting: null, units: 14077, share: 0.6691, other: true }
+      ],
+      passenger: [
+        { label: "TESLA MODEL 3", starting: 29900000, units: 422, share: 0.0866 },
+        { label: "PEUGEOT 308", starting: 19900000, units: 281, share: 0.0577 },
+        { label: "CITROEN NEW C4", starting: 22900000, units: 225, share: 0.0462 },
+        { label: "CUPRA CUPRA LEON", starting: 25990000, units: 211, share: 0.0433 },
+        { label: "AUDI A3", starting: 29100000, units: 202, share: 0.0415 },
+        { label: "MERCEDES BENZ A", starting: 28900000, units: 184, share: 0.0378 },
+        { label: "TOYOTA COROLLA", starting: 21990000, units: 166, share: 0.0341 },
+        { label: "SUBARU IMPREZA SPORT NEW GENERATION", starting: 19900000, units: 137, share: 0.0281 },
+        { label: "BMW 120", starting: 30500000, units: 134, share: 0.0275 },
+        { label: "OTROS", starting: null, units: 2911, share: 0.5974, other: true }
+      ]
+    };
+
+    const formatNumber = (value) => new Intl.NumberFormat("es-CL").format(value);
+    const formatMoney = (value) => value == null ? "" : `${(value / 1000000).toFixed(1)} M`;
+    const formatShare = (value) => new Intl.NumberFormat("es-CL", {
+      style: "percent",
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    }).format(value);
+    const domainMax = (rows) => Math.min(1, Math.ceil((Math.max(...rows.map((row) => row.share)) * 1.08) / 0.05) * 0.05);
+
+    function shortLabel(text, limit) {
+      return text.length > limit ? text.slice(0, limit - 1) + "..." : text;
+    }
+
+    function drawChart(slot) {
+      const key = slot.dataset.chart;
+      const rows = data[key];
+      const width = Math.max(320, Math.floor(slot.getBoundingClientRect().width));
+      const isNarrow = width < 520;
+      const labelWidth = isNarrow ? 142 : 292;
+      const right = isNarrow ? 104 : 152;
+      const top = 54;
+      const bottom = 54;
+      const rowHeight = isNarrow ? 46 : 42;
+      const height = top + bottom + rows.length * rowHeight;
+      const chartLeft = labelWidth;
+      const chartRight = width - right;
+      const chartWidth = Math.max(80, chartRight - chartLeft);
+      const maxValue = domainMax(rows);
+      const ticks = isNarrow ? 4 : 5;
+      const chartTitle = key === "suv"
+        ? "SUV | Rango precio lista $30MM-$50MM CLP | Ene-Dic de 2025"
+        : "Vehículos de Pasajeros | Rango precio lista $25MM-$50MM CLP | Ene-Dic de 2025";
+
+      slot.textContent = "";
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", `${key === "suv" ? "SUV" : "Vehículos de Pasajeros"}: market share por modelo en 2025, con precio de entrada y unidades vendidas`);
+
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = chartTitle;
+      svg.appendChild(title);
+
+      const desc = document.createElementNS("http://www.w3.org/2000/svg", "desc");
+      desc.textContent = "Gráfico de barras horizontales con modelos en el eje vertical y market share en el eje horizontal. Cada etiqueta de barra incluye unidades vendidas.";
+      svg.appendChild(desc);
+
+      const visibleTitle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      visibleTitle.setAttribute("class", "chart-title");
+      visibleTitle.setAttribute("x", 0);
+      visibleTitle.setAttribute("y", 14);
+      visibleTitle.textContent = chartTitle;
+      svg.appendChild(visibleTitle);
+
+      for (let i = 0; i <= ticks; i += 1) {
+        const value = (maxValue / ticks) * i;
+        const x = chartLeft + (value / maxValue) * chartWidth;
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("class", "grid-line");
+        line.setAttribute("x1", x);
+        line.setAttribute("x2", x);
+        line.setAttribute("y1", top);
+        line.setAttribute("y2", height - bottom);
+        svg.appendChild(line);
+
+        const tick = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        tick.setAttribute("class", "axis");
+        tick.setAttribute("x", x);
+        tick.setAttribute("y", height - 30);
+        tick.setAttribute("text-anchor", i === 0 ? "start" : i === ticks ? "end" : "middle");
+        tick.textContent = formatShare(value);
+        svg.appendChild(tick);
+      }
+
+      rows.forEach((row, index) => {
+        const y = top + index * rowHeight + 7;
+        const barHeight = rowHeight - 16;
+        const barWidth = Math.max(2, (row.share / maxValue) * chartWidth);
+        const labelLimit = isNarrow ? 20 : 40;
+        const labelText = row.starting == null || isNarrow
+          ? shortLabel(row.label, labelLimit)
+          : shortLabel(`${row.label} | ${formatMoney(row.starting)}`, labelLimit);
+
+        const model = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        model.setAttribute("x", 0);
+        model.setAttribute("y", y + 9);
+        model.textContent = labelText;
+        svg.appendChild(model);
+
+        if (row.starting != null && isNarrow) {
+          const price = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          price.setAttribute("class", "price-note");
+          price.setAttribute("x", 0);
+          price.setAttribute("y", y + 25);
+          price.textContent = formatMoney(row.starting);
+          svg.appendChild(price);
+        }
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("class", row.other ? "bar other" : "bar");
+        rect.setAttribute("x", chartLeft);
+        rect.setAttribute("y", y);
+        rect.setAttribute("width", barWidth);
+        rect.setAttribute("height", barHeight);
+        rect.setAttribute("data-tooltip", `${row.label}: ${formatShare(row.share)} | ${formatNumber(row.units)} unidades${row.starting == null ? "" : " | " + formatMoney(row.starting)}`);
+        svg.appendChild(rect);
+
+        const value = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const text = `${formatShare(row.share)} | ${formatNumber(row.units)} un.`;
+        const outsideX = chartLeft + barWidth + 8;
+        const fitsOutside = outsideX < width - 98;
+        value.setAttribute("x", fitsOutside ? outsideX : chartLeft + barWidth - 8);
+        value.setAttribute("y", y + barHeight / 2 + 4);
+        value.setAttribute("text-anchor", fitsOutside ? "start" : "end");
+        value.textContent = text;
+        svg.appendChild(value);
+      });
+
+      const frame = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      frame.setAttribute("class", "chart-frame");
+      frame.setAttribute("data-chart-frame", "true");
+      frame.setAttribute("x", chartLeft);
+      frame.setAttribute("y", top);
+      frame.setAttribute("width", chartWidth);
+      frame.setAttribute("height", height - top - bottom);
+      svg.appendChild(frame);
+
+      const xTitle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      xTitle.setAttribute("class", "axis-title");
+      xTitle.setAttribute("data-axis", "x");
+      xTitle.setAttribute("x", chartLeft + chartWidth / 2);
+      xTitle.setAttribute("y", height - 6);
+      xTitle.setAttribute("text-anchor", "middle");
+      xTitle.textContent = "Market share";
+      svg.appendChild(xTitle);
+
+      const yTitle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      yTitle.setAttribute("class", "axis-title");
+      yTitle.setAttribute("data-axis", "y");
+      yTitle.setAttribute("x", 0);
+      yTitle.setAttribute("y", 40);
+      yTitle.textContent = "Modelo y precio de entrada";
+      svg.appendChild(yTitle);
+
+      slot.appendChild(svg);
+    }
+
+    function drawAll() {
+      root.querySelectorAll(".chart-slot").forEach(drawChart);
+    }
+
+    function cssVar(name) {
+      return getComputedStyle(root).getPropertyValue(name).trim();
+    }
+
+    async function downloadChart(key) {
+      const slot = root.querySelector(`.chart-slot[data-chart="${key}"]`);
+      const svg = slot && slot.querySelector("svg");
+      if (!svg) return;
+
+      const clone = svg.cloneNode(true);
+      const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
+      style.textContent = `
+        text { fill: ${cssVar("--foreground")}; font-size: 12px; font-family: system-ui, sans-serif; }
+        .chart-title { fill: ${cssVar("--foreground")}; font-weight: 500; }
+        .axis text, .axis-title, .price-note { fill: ${cssVar("--muted-foreground")}; }
+        .grid-line { stroke: ${cssVar("--border")}; stroke-width: 1; }
+        .bar { fill: ${cssVar("--viz-series-1")}; }
+        .bar.other { fill: ${cssVar("--viz-series-2")}; }
+        .chart-frame { fill: none; stroke: ${cssVar("--border")}; stroke-width: 1; }
+      `;
+      clone.insertBefore(style, clone.firstChild);
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+      const viewBox = clone.getAttribute("viewBox").split(" ").map(Number);
+      const scale = 2;
+      const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const image = new Image();
+      image.decoding = "async";
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = reject;
+        image.src = url;
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(viewBox[2] * scale);
+      canvas.height = Math.round(viewBox[3] * scale);
+      const context = canvas.getContext("2d");
+      context.scale(scale, scale);
+      context.clearRect(0, 0, viewBox[2], viewBox[3]);
+      context.drawImage(image, 0, 0, viewBox[2], viewBox[3]);
+      URL.revokeObjectURL(url);
+
+      const pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!pngBlob) return;
+      const pngUrl = URL.createObjectURL(pngBlob);
+      const link = document.createElement("a");
+      link.href = pngUrl;
+      link.download = key === "suv" ? "suv-market-share-2025.png" : "passenger-vehicles-market-share-2025.png";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(pngUrl);
+    }
+
+    drawAll();
+    new ResizeObserver(drawAll).observe(root);
+    root.querySelectorAll("[data-download]").forEach((button) => {
+      button.addEventListener("click", () => downloadChart(button.dataset.download));
+    });
+  })();
+</script>

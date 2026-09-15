@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ANAC Market Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body data-view="model">
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">ANAC Chile · 2025-2026</p>
+          <h1>Market Explorer</h1>
+        </div>
+        <div class="data-note" id="data-note">Cargando base...</div>
+      </header>
+
+      <nav class="page-tabs" aria-label="Vistas de análisis">
+        <a class="active" href="index.html">Por modelo</a>
+        <a href="brand.html">Por marca</a>
+      </nav>
+
+      <section class="controls" aria-label="Filtros del mercado">
+        <label>
+          <span>Año</span>
+          <select id="year-select">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Categoría</span>
+          <select id="category-select">
+            <option value="SUV">SUV</option>
+            <option value="Vehículos de Pasajeros">Vehículos de Pasajeros</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Precio mínimo (MM CLP)</span>
+          <input id="price-min" type="number" min="0" step="0.5" value="30">
+        </label>
+
+        <label>
+          <span>Precio máximo (MM CLP)</span>
+          <input id="price-max" type="number" min="0" step="0.5" value="50">
+        </label>
+
+        <label>
+          <span>Cantidad top</span>
+          <input id="top-count" type="number" min="1" max="50" step="1" value="8">
+        </label>
+
+        <label class="comparison-toggle">
+          <input id="yoy-toggle" type="checkbox">
+          <span>Evolución interanual</span>
+        </label>
+
+        <button id="reset-filters" type="button">Restablecer</button>
+      </section>
+
+      <section class="exclude-panel" aria-label="Autos excluidos">
+        <div class="exclude-entry">
+          <label for="exclude-brand-input">
+            <span>Marca</span>
+            <input id="exclude-brand-input" list="brand-options" type="text" placeholder="Buscar marca">
+          </label>
+          <datalist id="brand-options"></datalist>
+
+          <label for="exclude-model-input">
+            <span>Modelo</span>
+            <input id="exclude-model-input" list="exclude-model-options" type="text" placeholder="Buscar modelo">
+          </label>
+          <datalist id="exclude-model-options"></datalist>
+
+          <label for="exclude-version-input">
+            <span>Versión opcional</span>
+            <input id="exclude-version-input" list="version-options" type="text" placeholder="Buscar versión">
+          </label>
+          <datalist id="version-options"></datalist>
+
+          <button id="add-exclusion" type="button">Quitar</button>
+          <button id="clear-exclusions" type="button">Limpiar</button>
+          <button id="general-filter" type="button">Filtro general</button>
+        </div>
+        <div class="excluded-list" id="excluded-list" aria-live="polite"></div>
+      </section>
+
+      <section class="summary-strip" aria-live="polite">
+        <div>
+          <span>Mercado seleccionado</span>
+          <strong id="market-units">0 un.</strong>
+        </div>
+        <div>
+          <span>Modelos considerados</span>
+          <strong id="model-count">0</strong>
+        </div>
+        <div>
+          <span>Rango precio lista</span>
+          <strong id="price-range-label">$30MM-$50MM</strong>
+        </div>
+      </section>
+
+      <section class="chart-section">
+        <div class="section-heading">
+          <div>
+            <h2 id="main-title">Market share por modelo</h2>
+            <p id="main-subtitle">Top 9 modelos y resto del mercado filtrado</p>
+          </div>
+          <button id="download-chart" type="button">Descargar gráfico</button>
+        </div>
+        <div id="model-chart" class="bar-chart" aria-label="Market share por modelo"></div>
+      </section>
+
+      <section class="chart-section detail-section">
+        <div class="section-heading">
+          <div>
+            <h2 id="version-title">Distribución por versión</h2>
+            <p id="version-subtitle">Selecciona un modelo del gráfico principal</p>
+          </div>
+        </div>
+        <div id="version-chart" class="bar-chart" aria-label="Participación por versión"></div>
+      </section>
+    </main>
+
+    <script src="anac-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,291 @@
+<div id="passenger-market-share-2025-2026" class="segment-comparison">
+  <div class="viz-row segment-comparison-header">
+    <h2>Vehículos de Pasajeros | Market share por modelo</h2>
+    <button class="btn btn-ghost" type="button" data-download-page>Descargar PNG</button>
+  </div>
+  <div class="combined-chart"></div>
+</div>
+
+<style>
+  #passenger-market-share-2025-2026 {
+    width: 100%;
+    color: var(--foreground);
+  }
+
+  #passenger-market-share-2025-2026 .segment-comparison-header {
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  #passenger-market-share-2025-2026 h2 {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  #passenger-market-share-2025-2026 .combined-chart {
+    width: 100%;
+  }
+
+  #passenger-market-share-2025-2026 svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  #passenger-market-share-2025-2026 text {
+    fill: var(--foreground);
+    font-size: 12px;
+  }
+
+  #passenger-market-share-2025-2026 .chart-title,
+  #passenger-market-share-2025-2026 .period-title {
+    fill: var(--foreground);
+    font-weight: 500;
+  }
+
+  #passenger-market-share-2025-2026 .chart-subtitle,
+  #passenger-market-share-2025-2026 .axis text,
+  #passenger-market-share-2025-2026 .axis-title,
+  #passenger-market-share-2025-2026 .price-note {
+    fill: var(--muted-foreground);
+  }
+
+  #passenger-market-share-2025-2026 .grid-line {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+
+  #passenger-market-share-2025-2026 .bar {
+    fill: var(--viz-series-1);
+  }
+
+  #passenger-market-share-2025-2026 .bar.other {
+    fill: var(--viz-series-2);
+  }
+
+  #passenger-market-share-2025-2026 .chart-frame {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+</style>
+
+<script>
+  (() => {
+    const root = document.getElementById("passenger-market-share-2025-2026");
+    const chartSlot = root.querySelector(".combined-chart");
+    const periods = [
+      {
+        period: "Ene-Dic de 2025",
+        rows: [
+          { label: "TESLA MODEL 3", starting: 29900000, units: 422, share: 0.0866 },
+          { label: "PEUGEOT 308", starting: 19900000, units: 281, share: 0.0577 },
+          { label: "CITROEN NEW C4", starting: 22900000, units: 225, share: 0.0462 },
+          { label: "CUPRA CUPRA LEON", starting: 25990000, units: 211, share: 0.0433 },
+          { label: "AUDI A3", starting: 29100000, units: 202, share: 0.0415 },
+          { label: "MERCEDES BENZ A", starting: 28900000, units: 184, share: 0.0378 },
+          { label: "TOYOTA COROLLA", starting: 21990000, units: 166, share: 0.0341 },
+          { label: "SUBARU IMPREZA SPORT NEW GENERATION", starting: 19900000, units: 137, share: 0.0281 },
+          { label: "BMW 120", starting: 30500000, units: 134, share: 0.0275 },
+          { label: "OTROS", starting: null, units: 2911, share: 0.5974, other: true }
+        ]
+      },
+      {
+        period: "Ene-Ago de 2026",
+        rows: [
+          { label: "TESLA MODEL 3", starting: 29900000, units: 977, share: 0.2806 },
+          { label: "BMW 120", starting: 30500000, units: 207, share: 0.0594 },
+          { label: "CITROEN NEW C4", starting: 22900000, units: 181, share: 0.0520 },
+          { label: "SUBARU IMPREZA SPORT NEW GENERATION", starting: 19900000, units: 165, share: 0.0474 },
+          { label: "MERCEDES BENZ A", starting: 28900000, units: 156, share: 0.0448 },
+          { label: "CUPRA CUPRA LEON", starting: 25990000, units: 116, share: 0.0333 },
+          { label: "TOYOTA COROLLA", starting: 21990000, units: 110, share: 0.0316 },
+          { label: "AUDI A3", starting: 29100000, units: 95, share: 0.0273 },
+          { label: "PEUGEOT 308", starting: 19900000, units: 66, share: 0.0190 },
+          { label: "OTROS", starting: null, units: 1409, share: 0.4047, other: true }
+        ]
+      }
+    ];
+
+    const formatNumber = (value) => new Intl.NumberFormat("es-CL").format(value);
+    const formatMoney = (value) => {
+      if (value == null) return "";
+      const millions = Math.floor((value / 1000000) * 10) / 10;
+      return `${millions.toFixed(1)} M`;
+    };
+    const formatShare = (value) => new Intl.NumberFormat("es-CL", {
+      style: "percent",
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    }).format(value);
+    const domainMax = Math.min(1, Math.ceil((Math.max(...periods.flatMap((period) => period.rows.map((row) => row.share))) * 1.08) / 0.05) * 0.05);
+
+    function shortLabel(text, limit) {
+      return text.length > limit ? text.slice(0, limit - 1) + "..." : text;
+    }
+
+    function appendText(svg, className, text, x, y, anchor = "start") {
+      const node = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      node.setAttribute("class", className);
+      node.setAttribute("x", x);
+      node.setAttribute("y", y);
+      node.setAttribute("text-anchor", anchor);
+      node.textContent = text;
+      svg.appendChild(node);
+      return node;
+    }
+
+    function draw() {
+      const width = Math.max(320, Math.floor(chartSlot.getBoundingClientRect().width));
+      const isNarrow = width < 520;
+      const labelWidth = isNarrow ? 144 : 316;
+      const right = isNarrow ? 104 : 154;
+      const rowHeight = isNarrow ? 46 : 40;
+      const panelTop = 84;
+      const panelGap = 34;
+      const panelHeader = 34;
+      const panelBottom = 54;
+      const chartLeft = labelWidth;
+      const chartRight = width - right;
+      const chartWidth = Math.max(80, chartRight - chartLeft);
+      const panelHeights = periods.map((period) => panelHeader + period.rows.length * rowHeight + panelBottom);
+      const height = panelTop + panelHeights.reduce((sum, value) => sum + value, 0) + panelGap * (periods.length - 1);
+      const ticks = isNarrow ? 3 : 5;
+
+      chartSlot.textContent = "";
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", "Vehículos de Pasajeros: dos gráficos de market share por modelo para Ene-Dic de 2025 y Ene-Ago de 2026, con precio de entrada y unidades vendidas");
+
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = "Vehículos de Pasajeros | Market share por modelo | 2025 y 2026";
+      svg.appendChild(title);
+
+      const desc = document.createElementNS("http://www.w3.org/2000/svg", "desc");
+      desc.textContent = "Dos gráficos de barras horizontales apilados. Cada gráfico usa market share en el eje X y modelo más precio de entrada en el eje Y.";
+      svg.appendChild(desc);
+
+      appendText(svg, "chart-title", "Vehículos de Pasajeros | Market share por modelo", 0, 18);
+      appendText(svg, "chart-subtitle", "Rango precio lista $25MM-$50MM CLP | 2025 completo y Ene-Ago de 2026", 0, 40);
+
+      let currentY = panelTop;
+      periods.forEach((period, periodIndex) => {
+        const frameY = currentY + panelHeader;
+        const frameHeight = period.rows.length * rowHeight;
+        appendText(svg, "period-title", period.period, 0, currentY + 14);
+        appendText(svg, "axis-title", "Modelo y precio de entrada", 0, frameY - 6);
+
+        for (let i = 0; i <= ticks; i += 1) {
+          const value = (domainMax / ticks) * i;
+          const x = chartLeft + (value / domainMax) * chartWidth;
+          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("class", "grid-line");
+          line.setAttribute("x1", x);
+          line.setAttribute("x2", x);
+          line.setAttribute("y1", frameY);
+          line.setAttribute("y2", frameY + frameHeight);
+          svg.appendChild(line);
+          appendText(svg, "axis", formatShare(value), x, frameY + frameHeight + 19, i === 0 ? "start" : i === ticks ? "end" : "middle");
+        }
+
+        period.rows.forEach((row, index) => {
+          const y = frameY + index * rowHeight + 7;
+          const barHeight = rowHeight - 16;
+          const barWidth = Math.max(2, (row.share / domainMax) * chartWidth);
+          const labelLimit = isNarrow ? 20 : 42;
+          const modelLabel = row.starting == null ? row.label : `${row.label} | ${formatMoney(row.starting)}`;
+
+          appendText(svg, "", shortLabel(modelLabel, labelLimit), 0, y + 15);
+
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          rect.setAttribute("class", row.other ? "bar other" : "bar");
+          rect.setAttribute("x", chartLeft);
+          rect.setAttribute("y", y);
+          rect.setAttribute("width", barWidth);
+          rect.setAttribute("height", barHeight);
+          rect.setAttribute("data-tooltip", `${row.label}: ${formatShare(row.share)} | ${formatNumber(row.units)} unidades${row.starting == null ? "" : " | " + formatMoney(row.starting)}`);
+          svg.appendChild(rect);
+
+          const valueText = `${formatShare(row.share)} | ${formatNumber(row.units)} un.`;
+          const outsideX = chartLeft + barWidth + 8;
+          const fitsOutside = outsideX < width - 100;
+          appendText(svg, "", valueText, fitsOutside ? outsideX : chartLeft + barWidth - 8, y + barHeight / 2 + 4, fitsOutside ? "start" : "end");
+        });
+
+        const frame = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        frame.setAttribute("class", "chart-frame");
+        frame.setAttribute("data-chart-frame", "true");
+        frame.setAttribute("x", chartLeft);
+        frame.setAttribute("y", frameY);
+        frame.setAttribute("width", chartWidth);
+        frame.setAttribute("height", frameHeight);
+        svg.appendChild(frame);
+
+        appendText(svg, "axis-title", "Market share", chartLeft + chartWidth / 2, frameY + frameHeight + 43, "middle");
+        currentY += panelHeights[periodIndex] + panelGap;
+      });
+
+      chartSlot.appendChild(svg);
+    }
+
+    function cssVar(name) {
+      return getComputedStyle(root).getPropertyValue(name).trim();
+    }
+
+    async function downloadPage() {
+      const svg = chartSlot.querySelector("svg");
+      if (!svg) return;
+      const clone = svg.cloneNode(true);
+      const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
+      style.textContent = `
+        text { fill: ${cssVar("--foreground")}; font-size: 12px; font-family: system-ui, sans-serif; }
+        .chart-title, .period-title { fill: ${cssVar("--foreground")}; font-weight: 500; }
+        .chart-subtitle, .axis text, .axis-title, .price-note { fill: ${cssVar("--muted-foreground")}; }
+        .grid-line { stroke: ${cssVar("--border")}; stroke-width: 1; }
+        .bar { fill: ${cssVar("--viz-series-1")}; }
+        .bar.other { fill: ${cssVar("--viz-series-2")}; }
+        .chart-frame { fill: none; stroke: ${cssVar("--border")}; stroke-width: 1; }
+      `;
+      clone.insertBefore(style, clone.firstChild);
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+      const viewBox = clone.getAttribute("viewBox").split(" ").map(Number);
+      const scale = 2;
+      const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const image = new Image();
+      image.decoding = "async";
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = reject;
+        image.src = url;
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(viewBox[2] * scale);
+      canvas.height = Math.round(viewBox[3] * scale);
+      const context = canvas.getContext("2d");
+      context.scale(scale, scale);
+      context.clearRect(0, 0, viewBox[2], viewBox[3]);
+      context.drawImage(image, 0, 0, viewBox[2], viewBox[3]);
+      URL.revokeObjectURL(url);
+
+      const pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!pngBlob) return;
+      const pngUrl = URL.createObjectURL(pngBlob);
+      const link = document.createElement("a");
+      link.href = pngUrl;
+      link.download = "passenger-market-share-2025-2026.png";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(pngUrl);
+    }
+
+    draw();
+    new ResizeObserver(draw).observe(root);
+    root.querySelector("[data-download-page]").addEventListener("click", downloadPage);
+  })();
+</script>
