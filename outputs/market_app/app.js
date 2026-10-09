@@ -158,16 +158,16 @@ function topDescription(groupPlural, totalGroups) {
 }
 
 function periodLabel() {
-  return state.year === 2026 ? "Ene-Ago de 2026" : "Ene-Dic de 2025";
+  return state.year === 2026 ? "Ene-Sep de 2026" : "Ene-Dic de 2025";
 }
 
 function currentPeriodLabel() {
-  return activeYear() === 2026 ? "Ene-Ago de 2026" : "Ene-Dic de 2025";
+  return activeYear() === 2026 ? "Ene-Sep de 2026" : "Ene-Dic de 2025";
 }
 
 function periodSlug() {
   if (showComparisonMode()) return "interanual";
-  return state.year === 2026 ? "ene-ago" : "ene-dic";
+  return state.year === 2026 ? "ene-sep" : "ene-dic";
 }
 
 function categorySlug() {
@@ -809,7 +809,7 @@ function renderMainChart() {
   const topText = topDescription(groupPlural, groups.length);
   els.mainTitle.textContent = `${state.category} | Market share por ${groupLabel}`;
   els.mainSubtitle.textContent = showComparison
-    ? `Evolución interanual · Ene-Ago de 2026 vs 2025 · rango precio lista ${moneyRangeLabel()} CLP · ${topText}`
+    ? `Evolución interanual · Ene-Sep de 2026 vs 2025 · rango precio lista ${moneyRangeLabel()} CLP · ${topText}`
     : `${periodLabel()} · rango precio lista ${moneyRangeLabel()} CLP · ${topText}`;
 
   renderBarChart(els.modelChart, rows, {
@@ -877,7 +877,7 @@ function drawDownloadChart() {
   const groupPlural = isBrandView ? "marcas" : "modelos";
   const topText = topDescription(groupPlural, state.currentGroupCount);
   const subtitle = showComparison
-    ? `Evolución interanual · Ene-Ago de 2026 vs 2025 · rango precio lista ${moneyRangeLabel()} CLP · ${topText}`
+    ? `Evolución interanual · Ene-Sep de 2026 vs 2025 · rango precio lista ${moneyRangeLabel()} CLP · ${topText}`
     : `${periodLabel()} · rango precio lista ${moneyRangeLabel()} CLP · ${topText}`;
   ctx.fillText(subtitle, 70, 94);
 

@@ -233,7 +233,7 @@ if (
   valuesInsideBars < 1 ||
   !valuesAvoidBars ||
   !yoySubtitle.includes("Evolución interanual") ||
-  !yoySubtitle.includes("Ene-Ago de 2026") ||
+  !yoySubtitle.includes("Ene-Sep de 2026") ||
   comparisonTracks < 1 ||
   priorValues < 1 ||
   !yoyLegendText.includes("2026") ||
@@ -250,7 +250,7 @@ if (
   !generalFilterText.includes("PEUGEOT 3008 | Todas las versiones") ||
   !generalFilterText.includes("PEUGEOT NUEVO 2008 | Todas las versiones") ||
   !generalFilterText.includes("FORD TERRITORY | Todas las versiones") ||
-  suggestedFilename !== "2026_SUV_ene-ago_35-50MM_modelo.png" ||
+  suggestedFilename !== "2026_SUV_ene-sep_35-50MM_modelo.png" ||
   yoySuggestedFilename !== "2026_SUV_interanual_35-50MM_modelo.png"
 ) {
   process.exit(1);

@@ -6,7 +6,8 @@ import pandas as pd
 
 ROOT = Path(r"C:\Users\thirs\Documents\Calculo MS Tesla")
 DATA_2025 = ROOT / "inputs" / "data (33).xlsx"
-DATA_2026 = Path(r"C:\Users\thirs\Downloads\data (41).xlsx")
+DATA_2026_BASE = Path(r"C:\Users\thirs\Downloads\data (41).xlsx")
+DATA_2026_SEPTEMBER = Path(r"C:\Users\thirs\Downloads\data (42).xlsx")
 OUT = ROOT / "outputs" / "market_app"
 
 
@@ -52,7 +53,11 @@ def category_from_segment(segment):
 
 def main():
     source = pd.concat(
-        [load_source(DATA_2025, 2025), load_source(DATA_2026, 2026)],
+        [
+            load_source(DATA_2025, 2025),
+            load_source(DATA_2026_BASE, 2026),
+            load_source(DATA_2026_SEPTEMBER, 2026),
+        ],
         ignore_index=True,
     )
     source["category"] = source["segment"].map(category_from_segment)
@@ -68,7 +73,7 @@ def main():
     metadata = {
         "sources": {
             "2025": str(DATA_2025),
-            "2026": str(DATA_2026),
+            "2026": [str(DATA_2026_BASE), str(DATA_2026_SEPTEMBER)],
         },
         "recordCount": len(records),
         "years": sorted(source["year"].dropna().astype(int).unique().tolist()),
