@@ -8,6 +8,7 @@ ROOT = Path(r"C:\Users\thirs\Documents\Calculo MS Tesla")
 DATA_2025 = ROOT / "inputs" / "data (33).xlsx"
 DATA_2026_BASE = Path(r"C:\Users\thirs\Downloads\data (41).xlsx")
 DATA_2026_SEPTEMBER = Path(r"C:\Users\thirs\Downloads\data (42).xlsx")
+DATA_2026_OCTOBER = Path(r"C:\Users\thirs\Downloads\data (46).xlsx")
 OUT = ROOT / "outputs" / "market_app"
 
 
@@ -57,6 +58,7 @@ def main():
             load_source(DATA_2025, 2025),
             load_source(DATA_2026_BASE, 2026),
             load_source(DATA_2026_SEPTEMBER, 2026),
+            load_source(DATA_2026_OCTOBER, 2026).loc[lambda df: df["month"].eq("Oct")],
         ],
         ignore_index=True,
     )
@@ -73,7 +75,7 @@ def main():
     metadata = {
         "sources": {
             "2025": str(DATA_2025),
-            "2026": [str(DATA_2026_BASE), str(DATA_2026_SEPTEMBER)],
+            "2026": [str(DATA_2026_BASE), str(DATA_2026_SEPTEMBER), str(DATA_2026_OCTOBER)],
         },
         "recordCount": len(records),
         "years": sorted(source["year"].dropna().astype(int).unique().tolist()),
